@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="styles/index.css" />
+    </head>
+    <body>
+        <div id='container'></div>
+        <script src="scripts/event-emitter.js"></script>
+        <script src="scripts/formula.js"></script>
+        <script src="scripts/input.js"></script>
+        <script src="scripts/table.js"></script>
+        <script> 
+            const table = new Table(100, 1000);
+            container.appendChild(table.render().el);
+        </script>
+    </body>
+</html>
