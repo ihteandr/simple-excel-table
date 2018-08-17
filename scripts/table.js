@@ -6,25 +6,26 @@ class Table {
         this.el.classList.add('table');
         this.input = new Input();
         this.input.on('blur', this.blurHandler());
-        this.formulasInformation = [];
+        this.formulasInformation = {};
     }
     blurHandler() {
         return (data) => {
-            this.formulasInformation = this.formulasInformation.filter((formulaInfo) => (
-                formulaInfo.cellID !== data.cellID
-            ));
+            this.formulasInformation[data.cellID] = null;
             if (data.formula) {
-                this.formulasInformation.push(data);
+                this.formulasInformation[data.cellID] = data;
             }
             this.calculateFormulas();
         };
     }
     calculateFormulas() {
-        this.formulasInformation.forEach((formulaInfo) => {
-            let value = formulaInfo.formula.calculate(this);
-            let cell = formulaInfo.cell;
-            if (!cell.querySelector('input')) {
-                cell.innerText = value;
+        Object.keys(this.formulasInformation).forEach((key) => {
+            const formulaInfo = this.formulasInformation[key];
+            if (formulaInfo) {
+                let value = formulaInfo.formula.calculate(this);
+                let cell = formulaInfo.cell;
+                if (!cell.querySelector('input')) {
+                    cell.innerText = value;
+                }
             }
         });
     }
@@ -34,6 +35,9 @@ class Table {
         });
     }
     getCell(id) {
+        if (!/^[a-z]+[0-9]+$/.test(id)) {
+            return null;
+        }
         const row = id.replace(/[a-z]+/g, '');
         const column = id.replace(/[0-9]+/g, '');
         return this.el.querySelector(`[data-column$='${column}'][data-row$='${row}']`)
