@@ -8,14 +8,55 @@ const App = (() => {
             this.rows = [];
             this.cSize = 100;
             this.rSize = 1000;
-            this.input = new Input(this.cellGetter.bind(this));
-            this.input.on('blur', (data) => {
-                FormulaManager.addFormulaInformation(data);
+            this.input = new Input();
+            this.input.on('blur', this.clearActiveCell.bind(this));
+            this.currentActiveCell = null;
+            this.cellGetter = this.cellGetter.bind(this);
+            this.activateNewCell = this.activateNewCell.bind(this);
+        }
+        clearActiveCell() {
+            let value = this.input.getValue();
+            this.input.setValue(value);
+            if (this.currentActiveCell) {
+                this.deactivateCurrentCell(value);
+            }
+            this.input.remove();
+        }
+        deactivateCurrentCell(value) {
+            let formula;
+            if(Formula.isFormula(value)) {
+                formula = new Formula({
+                    expression: value,
+                    origins: [],
+                    cellGetter: this.cellGetter,
+                });
+                this.currentActiveCell.setFormula(value);
+                formula.putOrigin(this.currentActiveCell.getID());
+            } else {
+                this.currentActiveCell.setFormula(null);  
+            }
+            this.currentActiveCell.deactivate(value.trim());
+            FormulaManager.addFormulaInformation({
+                value: value,
+                cell: this.currentActiveCell,
+                formula: formula,
             });
-            this.activateCell = this.activateCell.bind(this);
         }
         activateCell(cell) {
-            this.input.appendTo(cell);
+            let cellFormula = cell.getFormula();
+            this.input.setValue(cellFormula === null ? cell.getValue() : cellFormula);
+            cell.putInput(this.input.el);
+            this.input.focus();
+            cell.activate();
+            this.currentActiveCell = cell;
+        }
+        activateNewCell(cell) {
+            let value = this.input.getValue();
+            this.input.setValue(value);
+            if (this.currentActiveCell) {
+                this.deactivateCurrentCell(value);
+            }
+            this.activateCell(cell);
         }
         cellGetter(id) {
             if (!/^[a-z]+[0-9]+$/.test(id)) {
@@ -49,7 +90,7 @@ const App = (() => {
             for (let i = 0; i < this.rSize; i++) {
                 const row = new Row(this.cSize, i);
                 this.rows.push(row);
-                row.on('cell:active', this.activateCell)
+                row.on('cell:active', this.activateNewCell)
                 rowsContainer.appendChild(row.render().el);
             }
             return rowsContainer;

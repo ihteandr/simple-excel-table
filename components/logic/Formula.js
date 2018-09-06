@@ -7,6 +7,9 @@ class Formula {
         this.origins = options.origins;
         this.cellGetter = options.cellGetter;
     }
+    static isFormula(value) {
+        return value.charAt(0) === '=';
+    }
     putOrigin(origin) {
         this.origins.push(origin);
     }

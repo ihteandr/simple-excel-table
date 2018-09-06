@@ -16,8 +16,11 @@ class RowCell extends Component {
     getID() {
         return `${this.columnName}${this.row}`;
     }
-    putInput(child) {
+    clear() {
         this.el.innerHTML = '';
+    }
+    putInput(child) {
+        this.clear();
         this.el.appendChild(child);
     }
     deactivate(value) {
