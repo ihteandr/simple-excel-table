@@ -4,13 +4,18 @@
     </head>
     <body>
         <div id='container'></div>
-        <script src="scripts/event-emitter.js"></script>
-        <script src="scripts/formula.js"></script>
-        <script src="scripts/input.js"></script>
-        <script src="scripts/table.js"></script>
+        <script src="./components/base/EventEmitter.js"></script>
+        <script src="./components/base//Component.js"></script>
+        <script src="./components/cells/HeaderCell.js"></script>
+        <script src="./components/cells/RowCell.js"></script>
+        <script src="./components/cells/RowNumberCell.js"></script>
+        <script src="./components/logic/Formula.js"></script>
+        <script src="./components/inputs/Input.js"></script>
+        <script src="./components/row/Row.js"></script>
+        <script src="./services/FormulaManager.js"></script>
+        <script src="./app.js"></script>
         <script> 
-            const table = new Table(100, 1000);
-            container.appendChild(table.render().el);
+            container.appendChild(App.render().el);
         </script>
     </body>
 </html>

@@ -1,24 +1,28 @@
-class Formula{
-    constructor(expression, origins) {
-        this.expression = expression
+class Formula {
+    constructor(options) {
+        this.expression = options.expression
             .replace(/(\s|\t)+/g, '')
             .replace(/\\/g, '\/')
             .toLowerCase();
-        this.origins = origins;
+        this.origins = options.origins;
+        this.cellGetter = options.cellGetter;
     }
-    calculate(table) {
+    putOrigin(origin) {
+        this.origins.push(origin);
+    }
+    calculate() {
         let parts = this.expression.substr(1).split(/(\-|\+|\*|\/)/g);
         let realExpression = '';
         for (let i = 0; i < parts.length; i++) {
             const part = parts[i];
             if (!['-', '+', '\/', '*'].includes(part)) {
                 if (isNaN(part)) {
-                    let cell = table.getCell(part);
+                    let cell = this.cellGetter(part);
                     if (!cell) {
                         realExpression = 'NAME!';
                         break;
                     }
-                    if (cell.querySelector('input')) {
+                    if (cell.active) {
                         realExpression = 'WAIT!';
                         break;
                     }
@@ -26,10 +30,14 @@ class Formula{
                         realExpression = 'CYCLE!';
                         break;
                     }
-                    const cellFormula = cell.getAttribute('data-formula');
+                    const cellFormula = cell.getFormula();
                     if (cellFormula) {
-                        const tempFormula = new Formula(cellFormula, this.origins.concat(part)); 
-                        const tempFormulaValue = tempFormula.calculate(table);
+                        const tempFormula = new Formula({
+                            expression: cellFormula, 
+                            origins: this.origins.concat(part),
+                            cellGetter: this.cellGetter
+                        }); 
+                        const tempFormulaValue = tempFormula.calculate();
                         if (tempFormulaValue === 'CYCLE!') {
                             realExpression = 'CYCLE!';
                             break;
@@ -37,7 +45,7 @@ class Formula{
                         realExpression += tempFormulaValue;
                         continue;
                     }
-                    realExpression += cell.innerText || '0';
+                    realExpression += cell.getValue() || '0';
                     continue;
                 }
             }
